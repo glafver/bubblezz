@@ -1,10 +1,13 @@
 let gameView = document.querySelector('#gameView');
 let ctx = gameView.getContext('2d');
 let bubbles = [];
+let checkedBubbles = [];
 let bubbleSize = 85;
 let bubbleRadius = 40;
 let selectedIndexX = -1;
 let selectedIndexY = -1;
+const rows = 4;
+const columns = 4;
 
 const generateColor = function() {
     let color = Math.floor(Math.random() * (4 - 1)) + 1;
@@ -18,13 +21,26 @@ const generateColor = function() {
 };
 
 const generateBubbles = function() {
-    for (let y = 0; y < 4; y++) {
+    for (let y = 0; y < rows; y++) {
         let row = [];
-        for (let x = 0; x < 4; x++) {
+
+        for (let x = 0; x < columns; x++) {
             let bubbleColor = generateColor();
             row.push(bubbleColor);
         }
         bubbles.push(row);
+    }
+
+};
+
+const initCheckedBubbles = function() {
+    checkedBubbles = [];
+    for (let y = 0; y < rows; y++) {
+        let row = [];
+        for (let x = 0; x < columns; x++) {
+            row.push(false);
+        }
+        checkedBubbles.push(row);
     }
 
 };
@@ -50,10 +66,10 @@ const drawSelectedBubble = function(centerX, centerY, radius) {
     if (selectedIndexX !== -1 && selectedIndexY !== -1) {
         let color = bubbles[selectedIndexX][selectedIndexY];
         ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-        ctx.shadowColor = 'black';
-        ctx.shadowBlur = 20;
-        ctx.shadowOffsetX = 20;
-        ctx.shadowOffsetY = 20;
+        // ctx.shadowColor = 'black';
+        // ctx.shadowBlur = 20;
+        // ctx.shadowOffsetX = 20;
+        // ctx.shadowOffsetY = 20;
 
         ctx.strokeStyle = 'black';
         ctx.beginPath();
@@ -64,12 +80,44 @@ const drawSelectedBubble = function(centerX, centerY, radius) {
     }
 }
 
+const drawSameAll = function() {
+    console.log('draw same all');
+    if (selectedIndexX !== -1 && selectedIndexY !== -1) {
+        drawSame(selectedIndexX, selectedIndexY, bubbles[selectedIndexX][selectedIndexY]);
+    }
+}
+
+const isEqualColors = function(color1, color2) {
+    if (color1[0] === color2[0] && color1[1] === color2[1] && color1[2] === color2[2]) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+const drawSame = function(x, y, color) {
+
+    if (x >= 0 && x < columns && y >= 0 && y < rows && checkedBubbles[x][y] === false && isEqualColors(bubbles[x][y], color)) {
+
+        console.log(x, y);
+        let colorPink = [255, 20, 147];
+        drawBubble(bubbleRadius + x * bubbleSize, bubbleRadius + y * bubbleSize, bubbleRadius, colorPink);
+        checkedBubbles[x][y] = true;
+
+        drawSame(x + 1, y, color);
+        drawSame(x, y + 1, color);
+        drawSame(x - 1, y, color);
+        drawSame(x, y - 1, color);
+    }
+
+}
+
 const drawAll = function() {
     ctx.clearRect(0, 0, 400, 400);
     ctx.shadowColor = 'transparent';
     drawBubbles();
     drawSelectedBubble(bubbleRadius + selectedIndexX * bubbleSize, bubbleRadius + selectedIndexY * bubbleSize, bubbleRadius);
-
+    drawSameAll();
 }
 
 gameView.addEventListener('mousedown', function(e) {
@@ -80,7 +128,7 @@ gameView.addEventListener('mousedown', function(e) {
     if (selectedIndexX === -1 && selectedIndexY === -1) {
         selectedIndexX = Math.floor(mouseX / bubbleSize);
         selectedIndexY = Math.floor(mouseY / bubbleSize);
-
+        initCheckedBubbles();
     } else {
         let selectedIndexX2 = Math.floor(mouseX / bubbleSize);
         let selectedIndexY2 = Math.floor(mouseY / bubbleSize);
@@ -97,21 +145,6 @@ gameView.addEventListener('mousedown', function(e) {
     drawAll();
 })
 
-// for (let i = 1; i <= 10; i++) {
-//     console.log(i);
-// }
-
-
-
-// const recurPrintNumber = function(k) {
-//     if (k <= 10) {
-//         console.log(k);
-//         recurPrintNumber(k + 1);
-//     }
-// }
-
-// recurPrintNumber(1);
-
-
 generateBubbles();
+initCheckedBubbles();
 drawBubbles();
