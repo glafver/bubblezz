@@ -9,6 +9,9 @@ let selectedIndexY = -1;
 const rows = 4;
 const columns = 4;
 
+let siblings1 = [];
+let siblings2 = [];
+
 const generateColor = function() {
     let color = Math.floor(Math.random() * (4 - 1)) + 1;
     if (color === 1) {
@@ -80,11 +83,19 @@ const drawSelectedBubble = function(centerX, centerY, radius) {
     }
 }
 
-const drawSameAll = function() {
-    console.log('draw same all');
-    if (selectedIndexX !== -1 && selectedIndexY !== -1) {
-        drawSame(selectedIndexX, selectedIndexY, bubbles[selectedIndexX][selectedIndexY]);
-    }
+const drawAllSiblings = function() {
+    let colorPink = [255, 20, 147];
+    let colorOrange = [0, 0, 0];
+    console.log(siblings1);
+    console.log(siblings2);
+    siblings1.forEach(e => {
+        drawBubble(bubbleRadius + e[0] * bubbleSize, bubbleRadius + e[1] * bubbleSize, bubbleRadius, colorPink);
+    })
+
+    siblings2.forEach(e => {
+        drawBubble(bubbleRadius + e[0] * bubbleSize, bubbleRadius + e[1] * bubbleSize, bubbleRadius, colorOrange);
+    })
+
 }
 
 const isEqualColors = function(color1, color2) {
@@ -95,19 +106,19 @@ const isEqualColors = function(color1, color2) {
     }
 }
 
-const drawSame = function(x, y, color) {
+const searchSibling = function(x, y, color, siblings) {
 
     if (x >= 0 && x < columns && y >= 0 && y < rows && checkedBubbles[x][y] === false && isEqualColors(bubbles[x][y], color)) {
 
         console.log(x, y);
-        let colorPink = [255, 20, 147];
-        drawBubble(bubbleRadius + x * bubbleSize, bubbleRadius + y * bubbleSize, bubbleRadius, colorPink);
+
+        siblings.push([x, y]);
         checkedBubbles[x][y] = true;
 
-        drawSame(x + 1, y, color);
-        drawSame(x, y + 1, color);
-        drawSame(x - 1, y, color);
-        drawSame(x, y - 1, color);
+        searchSibling(x + 1, y, color, siblings);
+        searchSibling(x, y + 1, color, siblings);
+        searchSibling(x - 1, y, color, siblings);
+        searchSibling(x, y - 1, color, siblings);
     }
 
 }
@@ -117,8 +128,18 @@ const drawAll = function() {
     ctx.shadowColor = 'transparent';
     drawBubbles();
     drawSelectedBubble(bubbleRadius + selectedIndexX * bubbleSize, bubbleRadius + selectedIndexY * bubbleSize, bubbleRadius);
-    drawSameAll();
+    // drawAllSiblings();
 }
+
+const clearBubbles = function(siblings) {
+    if (siblings.length > 1) {
+        const whiteColor = [255, 255, 255];
+        siblings.forEach(e => {
+            bubbles[e[0]][e[1]] = whiteColor;
+        })
+    }
+}
+
 
 gameView.addEventListener('mousedown', function(e) {
     const rect = gameView.getBoundingClientRect()
@@ -128,7 +149,7 @@ gameView.addEventListener('mousedown', function(e) {
     if (selectedIndexX === -1 && selectedIndexY === -1) {
         selectedIndexX = Math.floor(mouseX / bubbleSize);
         selectedIndexY = Math.floor(mouseY / bubbleSize);
-        initCheckedBubbles();
+
     } else {
         let selectedIndexX2 = Math.floor(mouseX / bubbleSize);
         let selectedIndexY2 = Math.floor(mouseY / bubbleSize);
@@ -137,6 +158,19 @@ gameView.addEventListener('mousedown', function(e) {
             let color2 = bubbles[selectedIndexX2][selectedIndexY2];
             bubbles[selectedIndexX][selectedIndexY] = color2;
             bubbles[selectedIndexX2][selectedIndexY2] = color;
+
+            initCheckedBubbles();
+            siblings1 = [];
+            searchSibling(selectedIndexX, selectedIndexY, bubbles[selectedIndexX][selectedIndexY], siblings1);
+            clearBubbles(siblings1);
+            console.log(siblings1)
+
+            initCheckedBubbles();
+            siblings2 = [];
+            searchSibling(selectedIndexX2, selectedIndexY2, bubbles[selectedIndexX2][selectedIndexY2], siblings2);
+            clearBubbles(siblings2);
+            console.log(siblings2)
+
         }
         selectedIndexX = -1;
         selectedIndexY = -1;
