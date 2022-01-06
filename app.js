@@ -142,12 +142,15 @@ const clearBubbles = function(siblings) {
 }
 
 const moveDown = function() {
+
     for (let x = 0; x < columns; x++) {
         for (let y = rows - 1; y > 0; y--) {
             if (isEqualColors(bubbles[x][y], whiteColor)) {
                 for (let i = y - 1; i >= 0; i--) {
-                    console.log(x, i)
+                    // console.log(x, i)
+
                     if (!isEqualColors(bubbles[x][i], whiteColor)) {
+
                         bubbles[x][y] = bubbles[x][i];
                         bubbles[x][i] = whiteColor;
                         break;
@@ -158,6 +161,46 @@ const moveDown = function() {
     }
 }
 
+const replaceEmptyBubbles = function() {
+    const updatedBubbles = [];
+
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < columns; x++) {
+            let newColor = generateColor();
+            // let newColor = [255, 20, 147];
+            if (isEqualColors(bubbles[x][y], whiteColor)) {
+                bubbles[x][y] = newColor;
+                console.log('replace', x, y);
+                updatedBubbles.push([x, y]);
+            }
+        }
+    }
+
+    console.log('Updated bubbles:');
+    printBubblesToConsole(updatedBubbles);
+}
+
+const printBubblesToConsole = function(changedBubbles) {
+    for (let y = 0; y < rows; y++) {
+        let line = '';
+        for (let x = 0; x < columns; x++) {
+            let isFound = false;
+            for (let k = 0; k < changedBubbles.length; k++) {
+                if (x == changedBubbles[k][0] && y == changedBubbles[k][1]) {
+                    isFound = true;
+                }
+            }
+
+            if (isFound) {
+                line += 'X';
+            } else {
+                line += 'O';
+            }
+
+        }
+        console.log(line);
+    }
+}
 
 gameView.addEventListener('mousedown', function(e) {
     const rect = gameView.getBoundingClientRect()
@@ -188,12 +231,18 @@ gameView.addEventListener('mousedown', function(e) {
             searchSibling(selectedIndexX2, selectedIndexY2, bubbles[selectedIndexX2][selectedIndexY2], siblings2);
             clearBubbles(siblings2);
             // console.log(siblings2);
+
+            siblings1.push(...siblings2);
+            console.log('Bubbles to remove:');
+            printBubblesToConsole(siblings1);
+
             moveDown();
+            replaceEmptyBubbles();
+
         }
         selectedIndexX = -1;
         selectedIndexY = -1;
     }
-
     drawAll();
 })
 
