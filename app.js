@@ -11,6 +11,7 @@ const columns = 4;
 
 let siblings1 = [];
 let siblings2 = [];
+const whiteColor = [255, 255, 255];
 
 const generateColor = function() {
     let color = Math.floor(Math.random() * (4 - 1)) + 1;
@@ -86,8 +87,8 @@ const drawSelectedBubble = function(centerX, centerY, radius) {
 const drawAllSiblings = function() {
     let colorPink = [255, 20, 147];
     let colorOrange = [0, 0, 0];
-    console.log(siblings1);
-    console.log(siblings2);
+    // console.log(siblings1);
+    // console.log(siblings2);
     siblings1.forEach(e => {
         drawBubble(bubbleRadius + e[0] * bubbleSize, bubbleRadius + e[1] * bubbleSize, bubbleRadius, colorPink);
     })
@@ -110,7 +111,7 @@ const searchSibling = function(x, y, color, siblings) {
 
     if (x >= 0 && x < columns && y >= 0 && y < rows && checkedBubbles[x][y] === false && isEqualColors(bubbles[x][y], color)) {
 
-        console.log(x, y);
+        // console.log(x, y);
 
         siblings.push([x, y]);
         checkedBubbles[x][y] = true;
@@ -133,10 +134,27 @@ const drawAll = function() {
 
 const clearBubbles = function(siblings) {
     if (siblings.length > 1) {
-        const whiteColor = [255, 255, 255];
+
         siblings.forEach(e => {
             bubbles[e[0]][e[1]] = whiteColor;
         })
+    }
+}
+
+const moveDown = function() {
+    for (let x = 0; x < columns; x++) {
+        for (let y = rows - 1; y > 0; y--) {
+            if (isEqualColors(bubbles[x][y], whiteColor)) {
+                for (let i = y - 1; i >= 0; i--) {
+                    console.log(x, i)
+                    if (!isEqualColors(bubbles[x][i], whiteColor)) {
+                        bubbles[x][y] = bubbles[x][i];
+                        bubbles[x][i] = whiteColor;
+                        break;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -163,14 +181,14 @@ gameView.addEventListener('mousedown', function(e) {
             siblings1 = [];
             searchSibling(selectedIndexX, selectedIndexY, bubbles[selectedIndexX][selectedIndexY], siblings1);
             clearBubbles(siblings1);
-            console.log(siblings1)
+            // console.log(siblings1);
 
             initCheckedBubbles();
             siblings2 = [];
             searchSibling(selectedIndexX2, selectedIndexY2, bubbles[selectedIndexX2][selectedIndexY2], siblings2);
             clearBubbles(siblings2);
-            console.log(siblings2)
-
+            // console.log(siblings2);
+            moveDown();
         }
         selectedIndexX = -1;
         selectedIndexY = -1;
