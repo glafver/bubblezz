@@ -9,6 +9,7 @@ const columns = 4;
 
 let selectedIndexX = -1;
 let selectedIndexY = -1;
+let msOnSelect = 0;
 
 let siblings1 = [];
 let siblings2 = [];
@@ -59,9 +60,12 @@ const drawBubble = function(centerX, centerY, radius, color) {
 }
 
 const drawBubbles = function() {
-    for (let i = 0; i < bubbles.length; i++) {
-        for (let j = 0; j < bubbles[i].length; j++) {
-            drawBubble(bubbleRadius + i * bubbleSize, bubbleRadius + j * bubbleSize, bubbleRadius, bubbles[i][j]);
+    for (let x = 0; x < bubbles.length; x++) {
+        for (let y = 0; y < bubbles[x].length; y++) {
+
+            if (!(selectedIndexX == x && selectedIndexY == y)) {
+                drawBubble(bubbleRadius + x * bubbleSize, bubbleRadius + y * bubbleSize, bubbleRadius, bubbles[x][y]);
+            }
         }
     }
 }
@@ -74,7 +78,8 @@ const drawSelectedBubble = function(centerX, centerY, radius) {
         ctx.strokeStyle = 'black';
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        ctx.stroke();
+        // console.log(radius);
+        // ctx.stroke();
 
         ctx.fill();
     }
@@ -110,11 +115,15 @@ const searchSibling = function(x, y, color, siblings) {
 }
 
 const drawAll = function() {
+    let ms = Date.now() % 1000 / 1000.0;
+    // console.log('draw all', ms % 1000 / 1000.0);
     ctx.clearRect(0, 0, 400, 400);
     ctx.shadowColor = 'transparent';
     drawBubbles();
-    drawSelectedBubble(bubbleRadius + selectedIndexX * bubbleSize, bubbleRadius + selectedIndexY * bubbleSize, bubbleRadius);
+    const animatedRadius = getAnimatedRadius(ms);
+    drawSelectedBubble(bubbleRadius + selectedIndexX * bubbleSize, bubbleRadius + selectedIndexY * bubbleSize, animatedRadius);
     drawScore();
+    window.requestAnimationFrame(drawAll);
 }
 
 const clearBubbles = function(siblings) {
@@ -124,6 +133,20 @@ const clearBubbles = function(siblings) {
 
             bubbles[e[0]][e[1]] = whiteColor;
         })
+    }
+}
+
+const getAnimatedRadius = function(animationOffset) {
+    // console.log("offset  ", animationOffset)
+    let diff = animationOffset - msOnSelect;
+    if (diff < 0.0) {
+        diff = 1.0 + diff;
+    };
+
+    if (diff <= 0.5) {
+        return -30 * diff + bubbleRadius;
+    } else {
+        return 30 * diff + 10;
     }
 }
 
@@ -186,6 +209,7 @@ const printBubblesToConsole = function(changedBubbles) {
 }
 
 gameView.addEventListener('mousedown', function(e) {
+
     const rect = gameView.getBoundingClientRect()
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -193,7 +217,7 @@ gameView.addEventListener('mousedown', function(e) {
     if (selectedIndexX === -1 && selectedIndexY === -1) {
         selectedIndexX = Math.floor(mouseX / bubbleSize);
         selectedIndexY = Math.floor(mouseY / bubbleSize);
-
+        msOnSelect = Date.now() % 1000 / 1000.0;
     } else {
         let selectedIndexX2 = Math.floor(mouseX / bubbleSize);
         let selectedIndexY2 = Math.floor(mouseY / bubbleSize);
@@ -224,8 +248,8 @@ gameView.addEventListener('mousedown', function(e) {
         selectedIndexX = -1;
         selectedIndexY = -1;
     }
-    drawAll();
+    // drawAll();
 })
 
 generateBubbles();
-drawAll();
+window.requestAnimationFrame(drawAll);
