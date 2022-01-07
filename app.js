@@ -13,6 +13,8 @@ let siblings1 = [];
 let siblings2 = [];
 const whiteColor = [255, 255, 255];
 
+let score = 0;
+
 const generateColor = function() {
     let color = Math.floor(Math.random() * (4 - 1)) + 1;
     if (color === 1) {
@@ -34,7 +36,6 @@ const generateBubbles = function() {
         }
         bubbles.push(row);
     }
-
 };
 
 const initCheckedBubbles = function() {
@@ -46,7 +47,6 @@ const initCheckedBubbles = function() {
         }
         checkedBubbles.push(row);
     }
-
 };
 
 const drawBubble = function(centerX, centerY, radius, color) {
@@ -83,6 +83,15 @@ const drawSelectedBubble = function(centerX, centerY, radius) {
         ctx.fill();
     }
 }
+
+const drawScore = function() {
+    console.log('your score')
+    ctx.font = "30px Arial";
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.fillText(`Your score is ${score}`, gameView.width / 2, 370);
+}
+
 
 const drawAllSiblings = function() {
     let colorPink = [255, 20, 147];
@@ -129,13 +138,15 @@ const drawAll = function() {
     ctx.shadowColor = 'transparent';
     drawBubbles();
     drawSelectedBubble(bubbleRadius + selectedIndexX * bubbleSize, bubbleRadius + selectedIndexY * bubbleSize, bubbleRadius);
+    drawScore();
     // drawAllSiblings();
 }
 
 const clearBubbles = function(siblings) {
     if (siblings.length > 1) {
-
+        score += siblings.length;
         siblings.forEach(e => {
+
             bubbles[e[0]][e[1]] = whiteColor;
         })
     }
